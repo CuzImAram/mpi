@@ -3,7 +3,7 @@
 #SBATCH --job-name="bubble_seq.c"
 
 ####### Partition #######
-#SBATCH --partition=pub23
+#SBATCH --partition=pub12
 
 ####### Ressources #######
 #SBATCH --time=0-00:05:00
@@ -17,6 +17,5 @@
 #SBATCH --output=out/bubble_seq.out.%j
 #SBATCH --error=out/error/bubble_seq.err.%j
 
-export OMP_NUM_THREADS=4
 #path/to/binary
-out/bubble_seq
+out/bubble_seq 20 123
