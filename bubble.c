@@ -1,9 +1,3 @@
-/*
- * Einführung in die Parallelverarbeitung
- * Projektaufgabe MPI - Parallel Version
- * Fixed Output Ordering
- */
-
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,6 +85,10 @@ int main(int argc, char **argv)
     unsigned int my_swaps = 0;
     int my_end_idx = global_start + local_n - 1;
 
+    // time measurement start
+    MPI_Barrier(MPI_COMM_WORLD);
+    double start_time = MPI_Wtime();
+
     for (int pass = 0; pass < n - 1; ++pass)
     {
         int limit = n - 1 - pass;
@@ -150,6 +148,15 @@ int main(int argc, char **argv)
             MPI_Recv(&returned, 1, mpi_elem_type, rank + 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             local_a[local_n - 1] = returned;
         }
+    }
+
+    // time measurement end
+    MPI_Barrier(MPI_COMM_WORLD);
+    double end_time = MPI_Wtime();
+
+    if (rank == 0)
+    {
+        printf("Time taken: %.6f seconds\n", end_time - start_time);
     }
 
     // 4. Output Logic

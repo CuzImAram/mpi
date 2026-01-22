@@ -18,4 +18,4 @@
 #SBATCH --error=out/error/bubble_seq.err.%j
 
 #path/to/binary
-out/bubble_seq 20 123
+out/bubble_seq 1000000 123

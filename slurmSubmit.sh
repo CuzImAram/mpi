@@ -18,4 +18,4 @@
 #SBATCH --error=out/error/bubble.err.%j
 
 #path/to/binary
-mpirun -n 4 out/bubble 20 123
+mpirun -n 1 out/bubble 100000 123
