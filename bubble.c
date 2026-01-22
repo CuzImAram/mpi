@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
         // Optimization: If the target limit is to the left of my start,
         // this process is done with all remaining passes.
-        if (limit <= global_start)
+        if (limit < global_start)
         {
             break;
         }
