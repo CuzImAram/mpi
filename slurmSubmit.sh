@@ -3,7 +3,7 @@
 #SBATCH --job-name="bubble.c"
 
 ####### Partition #######
-#SBATCH --partition=pub12
+#SBATCH --partition=pub23
 
 ####### Ressources #######
 #SBATCH --time=0-00:05:00
@@ -18,4 +18,4 @@
 #SBATCH --error=out/error/bubble.err.%j
 
 #path/to/binary
-mpirun -n 1 out/bubble 100000 123
+mpirun -n 32 out/bubble 200000 123

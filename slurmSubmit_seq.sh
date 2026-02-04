@@ -3,7 +3,7 @@
 #SBATCH --job-name="bubble_seq.c"
 
 ####### Partition #######
-#SBATCH --partition=pub12
+#SBATCH --partition=pub23
 
 ####### Ressources #######
 #SBATCH --time=0-00:05:00
@@ -18,4 +18,4 @@
 #SBATCH --error=out/error/bubble_seq.err.%j
 
 #path/to/binary
-out/bubble_seq 1000000 123
+out/bubble_seq 100000 123
