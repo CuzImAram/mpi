@@ -73,44 +73,17 @@ int main(int argc, char **argv)
         }
     }
 
-    // --- 3. High Performance Sorting ---
-    //
-    // OPTIMIZATION IDEAS (keeping same algorithm & n_swaps):
-    //
-    // 1. Load balancing problem: Higher-ranked processes finish early because large
-    //    elements bubble right quickly. Solution: Dynamic work stealing - idle processes
-    //    could take over boundary comparisons from busy neighbors, or use a coordinator
-    //    to reassign work dynamically based on where the "active front" currently is.
-    //
-    // 2. Further pipelining: Instead of pass-by-pass, we could track individual element
-    //    positions and allow multiple "bubbles" to be in flight simultaneously across
-    //    process boundaries, with careful tagging to maintain correctness.
-    //
-    // 3. Adaptive communication: For nearly-sorted data, use early termination detection
-    //    via Allreduce on swap count (but this changes the algorithm slightly).
-    //
+    // --- 3. Parallel Bubble Sort ---
+    // Strict left-to-right comparison order required for correctness
+    // Optimization potential is limited by the sequential nature of bubble sort
+
     MPI_Barrier(MPI_COMM_WORLD);
     double start_time = MPI_Wtime();
 
     unsigned int my_swaps = 0;
     int my_end_idx = global_start + local_n - 1;
 
-    // Persistent buffers and requests
-    MPI_Request req_left_recv = MPI_REQUEST_NULL;
-    MPI_Request req_left_send = MPI_REQUEST_NULL;
-    MPI_Request req_right_recv = MPI_REQUEST_NULL;
-    MPI_Request req_right_send = MPI_REQUEST_NULL;
-
-    Element buf_left_recv;
-    Element buf_left_send;
-    Element buf_right_recv;
-    Element buf_right_send;
-
-    // Pre-post first left receive to hide initial latency
-    if (rank > 0)
-    {
-        MPI_Irecv(&buf_left_recv, sizeof(Element), MPI_BYTE, rank - 1, 0, MPI_COMM_WORLD, &req_left_recv);
-    }
+    Element buf_send, buf_recv;
 
     for (int pass = 0; pass < n - 1; ++pass)
     {
@@ -121,72 +94,30 @@ int main(int argc, char **argv)
             break;
 
         int stop_in_me = (limit <= my_end_idx);
-        int effective_limit = stop_in_me ? (limit - global_start) : (local_n - 1);
+        int local_limit = stop_in_me ? (limit - global_start) : (local_n - 1);
 
-        // --- STEP A: DO LOCAL WORK FOR INDICES 1..local_n-2 (independent of boundaries) ---
-        // This overlaps with waiting for left boundary data
-        int inner_start = 1;
-        int inner_end = (stop_in_me) ? effective_limit : (local_n - 2);
-
-        for (int j = inner_start; j < inner_end; ++j)
-        {
-            if (local_a[j].val > local_a[j + 1].val)
-            {
-                Element tmp = local_a[j];
-                local_a[j] = local_a[j + 1];
-                local_a[j + 1] = tmp;
-                my_swaps++;
-            }
-        }
-
-        // --- STEP B: PROCESS LEFT BOUNDARY ---
+        // Step 1: Receive element from left neighbor and handle boundary comparison
         if (rank > 0)
         {
-            // Wait for data from left neighbor (posted at end of previous pass or before loop)
-            MPI_Wait(&req_left_recv, MPI_STATUS_IGNORE);
+            MPI_Recv(&buf_recv, sizeof(Element), MPI_BYTE, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            Element incoming = buf_left_recv;
-
-            // Compare incoming with local_a[0]
-            if (incoming.val > local_a[0].val)
+            if (buf_recv.val > local_a[0].val)
             {
-                buf_left_send = local_a[0];
-                local_a[0] = incoming;
+                buf_send = local_a[0];
+                local_a[0] = buf_recv;
                 my_swaps++;
             }
             else
             {
-                buf_left_send = incoming;
+                buf_send = buf_recv;
             }
 
-            // Send result back (non-blocking)
-            MPI_Isend(&buf_left_send, sizeof(Element), MPI_BYTE, rank - 1, 1, MPI_COMM_WORLD, &req_left_send);
+            MPI_Send(&buf_send, sizeof(Element), MPI_BYTE, rank - 1, 1, MPI_COMM_WORLD);
         }
 
-        // Now do the comparison at index 0 (which depends on left boundary result)
-        if (effective_limit > 0)
+        // Step 2: All local comparisons (left to right)
+        for (int j = 0; j < local_limit; ++j)
         {
-            if (local_a[0].val > local_a[1].val)
-            {
-                Element tmp = local_a[0];
-                local_a[0] = local_a[1];
-                local_a[1] = tmp;
-                my_swaps++;
-            }
-        }
-
-        // --- STEP C: FINALIZE RIGHT BOUNDARY FROM PREVIOUS PASS ---
-        if (req_right_recv != MPI_REQUEST_NULL)
-        {
-            MPI_Wait(&req_right_recv, MPI_STATUS_IGNORE);
-            local_a[local_n - 1] = buf_right_recv;
-            req_right_recv = MPI_REQUEST_NULL;
-        }
-
-        // Do the last comparison (local_n-2, local_n-1) if needed
-        if (!stop_in_me && local_n >= 2)
-        {
-            int j = local_n - 2;
             if (local_a[j].val > local_a[j + 1].val)
             {
                 Element tmp = local_a[j];
@@ -196,47 +127,15 @@ int main(int argc, char **argv)
             }
         }
 
-        // --- STEP D: INITIATE RIGHT BOUNDARY EXCHANGE FOR NEXT PASS ---
+        // Step 3: Send rightmost to right neighbor and receive result
         if (rank < p - 1 && !stop_in_me)
         {
-            buf_right_send = local_a[local_n - 1];
-            MPI_Isend(&buf_right_send, sizeof(Element), MPI_BYTE, rank + 1, 0, MPI_COMM_WORLD, &req_right_send);
-            MPI_Irecv(&buf_right_recv, sizeof(Element), MPI_BYTE, rank + 1, 1, MPI_COMM_WORLD, &req_right_recv);
-        }
-
-        // --- STEP E: PRE-POST LEFT RECEIVE FOR NEXT PASS ---
-        // Check if next pass will still need left boundary exchange
-        int next_limit = n - 2 - pass;
-        if (rank > 0 && next_limit >= global_start)
-        {
-            MPI_Irecv(&buf_left_recv, sizeof(Element), MPI_BYTE, rank - 1, 0, MPI_COMM_WORLD, &req_left_recv);
-        }
-
-        // Cleanup sends from this pass
-        if (req_right_send != MPI_REQUEST_NULL)
-        {
-            MPI_Wait(&req_right_send, MPI_STATUS_IGNORE);
-            req_right_send = MPI_REQUEST_NULL;
-        }
-        if (req_left_send != MPI_REQUEST_NULL)
-        {
-            MPI_Wait(&req_left_send, MPI_STATUS_IGNORE);
-            req_left_send = MPI_REQUEST_NULL;
+            buf_send = local_a[local_n - 1];
+            MPI_Send(&buf_send, sizeof(Element), MPI_BYTE, rank + 1, 0, MPI_COMM_WORLD);
+            MPI_Recv(&buf_recv, sizeof(Element), MPI_BYTE, rank + 1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            local_a[local_n - 1] = buf_recv;
         }
     }
-
-    // Final Cleanup
-    if (req_right_recv != MPI_REQUEST_NULL)
-    {
-        MPI_Wait(&req_right_recv, MPI_STATUS_IGNORE);
-        local_a[local_n - 1] = buf_right_recv;
-    }
-    if (req_right_send != MPI_REQUEST_NULL)
-        MPI_Wait(&req_right_send, MPI_STATUS_IGNORE);
-    if (req_left_send != MPI_REQUEST_NULL)
-        MPI_Wait(&req_left_send, MPI_STATUS_IGNORE);
-    if (req_left_recv != MPI_REQUEST_NULL)
-        MPI_Cancel(&req_left_recv);
 
     MPI_Barrier(MPI_COMM_WORLD);
     double end_time = MPI_Wtime();
