@@ -18,5 +18,5 @@
 #SBATCH --error=out/error/bubble.err.%j
 
 #path/to/binary
-mpirun -n 32 out/bubble 900000 123
+mpirun -n 16 out/bubble 100000 123
 #mpirun -n 4 perf stat -e L1-dcache-load-misses,L1-dcache-loads,LLC-load-misses,LLC-loads out/bubble 100000 123
