@@ -76,8 +76,8 @@ int main()
         int num = sizes[i];
         char seq_file[256], par_file[256];
 
-        sprintf(seq_file, "out/bubble_seq.out.%d", num);
-        sprintf(par_file, "out/bubble.out.%d", num);
+        sprintf(seq_file, "out_plot/bubble_seq.out.%d", num);
+        sprintf(par_file, "out_plot/bubble.out.%d", num);
 
         double seq_time = extract_time(seq_file);
         double par_time = extract_time(par_file);
