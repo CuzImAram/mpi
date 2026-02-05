@@ -18,4 +18,5 @@
 #SBATCH --error=out/error/bubble_seq.err.%j
 
 #path/to/binary
-out/bubble_seq 200000 123
+out/bubble_seq 100000 123
+#perf stat -e L1-dcache-load-misses,L1-dcache-loads,LLC-load-misses,LLC-loads out/bubble_seq 100000 123

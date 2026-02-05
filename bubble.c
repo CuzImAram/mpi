@@ -180,6 +180,9 @@ int main(int argc, char **argv)
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
+    double end_time = MPI_Wtime();
+    if (rank == 0)
+        printf("Time taken: %.6f seconds\n", end_time - start_time);
 
     // --- 4. Output Logic ---
     unsigned int total_swaps = 0;
@@ -222,11 +225,6 @@ int main(int argc, char **argv)
             free(full);
         }
     }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-    double end_time = MPI_Wtime();
-    if (rank == 0)
-        printf("Time taken: %.6f seconds\n", end_time - start_time);
 
     free(local_a);
     MPI_Finalize();
