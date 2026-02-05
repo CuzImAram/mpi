@@ -66,10 +66,6 @@ int main(int argc, char **argv)
         }
     }
 
-    clock_t end = clock();
-    double time_taken = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Time taken: %.6f seconds\n", time_taken);
-
     // Output n_swaps
     printf("n_swaps = %u\n", n_swaps);
 
@@ -83,6 +79,10 @@ int main(int argc, char **argv)
         }
         printf("\n");
     }
+
+    clock_t end = clock();
+    double time_taken = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Time taken: %.6f seconds\n", time_taken);
 
     free(a);
     return 0;

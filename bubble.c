@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
     Element buf_send, buf_recv;
 
-    // Test Values:
+    // Test Values (without posistion indices):
     // P0: [10, 50]
     // P1: [30, 20]
     // P2: [ 5,  1]
@@ -180,9 +180,6 @@ int main(int argc, char **argv)
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
-    double end_time = MPI_Wtime();
-    if (rank == 0)
-        printf("Time taken: %.6f seconds\n", end_time - start_time);
 
     // --- 4. Output Logic ---
     unsigned int total_swaps = 0;
@@ -225,6 +222,11 @@ int main(int argc, char **argv)
             free(full);
         }
     }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    double end_time = MPI_Wtime();
+    if (rank == 0)
+        printf("Time taken: %.6f seconds\n", end_time - start_time);
 
     free(local_a);
     MPI_Finalize();
