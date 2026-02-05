@@ -76,6 +76,31 @@ int main(int argc, char **argv)
     // --- 3. Parallel Bubble Sort ---
     // Strict left-to-right comparison order required for correctness
     // Optimization potential is limited by the sequential nature of bubble sort
+    //
+    // LOAD BALANCING: Due to large elements bubbling up quickly to the right,
+    // higher-ranked processes finish their work earlier than lower-ranked ones.
+    // Example: Element (142, 9.8) moves right faster than (7, 0.3) moves left.
+    // After several passes, P0 still compares (7, 0.3) with (25, 1.5) while
+    // P3 may already be idle as all large values like (142, 9.8) are settled.
+    // Possible approaches to address this imbalance:
+    // 1) Dynamic redistribution: Idle processes take over work from still-active
+    //    processes (requires complex communication and data migration).
+    // 2) Odd-Even Transposition Sort: Alternates between odd/even phases,
+    //    enabling better parallelism per iteration with more uniform workload.
+    // 3) Work-stealing: Idle processes request elements from busy processes.
+    //
+    // FURTHER OPTIMIZATIONS:
+    // - Early termination: Use a global flag to detect when no swaps occurred
+    //   in an iteration and terminate all processes early.
+    //   Example: If pass 85 has no swaps across all processes, stop immediately.
+    // - Pre-sorting locally: Sort each local block before communication rounds
+    //   to reduce the number of inter-process swaps.
+    //   Example: P1's [(50, 7.2), (51, 3.1), (52, 8.9)] -> [(51, 3.1), (50, 7.2), (52, 8.9)]
+    // - Non-blocking communication: Use MPI_Isend/Irecv to overlap computation
+    //   with communication where possible.
+    // - Pipelined communication: Start sending boundary elements as soon as
+    //   they are ready instead of waiting for all local comparisons.
+    //   Example: Send (39, 4.8) from P1 to P2 immediately after local_a[local_n-1] is updated.
 
     MPI_Barrier(MPI_COMM_WORLD);
     double start_time = MPI_Wtime();
