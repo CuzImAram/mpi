@@ -65,7 +65,7 @@ int main()
     }
 
     // Array of problem sizes (numbers from the filenames)
-    int sizes[] = {100, 200, 300, 400, 500, 600, 700, 800, 1000};
+    int sizes[] = {100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
     int num_sizes = sizeof(sizes) / sizeof(sizes[0]);
 
     printf("Reading timing data...\n");

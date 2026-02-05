@@ -1,0 +1,7 @@
+--------------------------------------------------------------------------
+prterun detected that one or more processes exited with non-zero status,
+thus causing the job to be terminated. The first process to do so was:
+
+   Process name: [prterun-its-cs503-3763371@1,21]
+   Exit code:    1
+--------------------------------------------------------------------------
