@@ -200,14 +200,14 @@ class MPISimulator:
         base_h = 550 
         
         # Skalierung berechnen (Platz für Button unten lassen)
-        self.scale = min(screen_w / base_w, (screen_h - 150) / base_h)
+        self.scale = min(screen_w / base_w, (screen_h - 250) / base_h)
         
         self.canvas = tk.Canvas(root, width=int(base_w * self.scale), height=int(base_h * self.scale), bg="#f0f0f0")
-        self.canvas.pack(pady=10)
+        self.canvas.pack(pady=5)
         
         self.btn = tk.Button(root, text="Nächster Tick (Alle Prozesse)", command=self.global_tick, 
-                             height=2, width=30, bg="#2c3e50", fg="white", font=("Arial", 12, "bold"))
-        self.btn.pack(pady=10)
+                             height=2, width=30, bg="#2c3e50", fg="white", font=("Arial", 14, "bold"))
+        self.btn.pack(pady=5)
         
         self.draw_state()
 
@@ -239,14 +239,14 @@ class MPISimulator:
             self.canvas.create_rectangle(x_offset+10, 20, x_offset+250, 520, fill=bg_col, outline=outline_col, width=width)
             
             # --- HEADER ---
-            self.canvas.create_text(x_offset+130, 40, text=f"Prozess P{r}", font=("Arial", 12, "bold"))
-            self.canvas.create_text(x_offset+130, 60, text=f"Loop Pass: {proc.pass_idx}", font=("Arial", 10))
+            self.canvas.create_text(x_offset+130, 40, text=f"Prozess P{r}", font=("Arial", 16, "bold"))
+            self.canvas.create_text(x_offset+130, 65, text=f"Loop Pass: {proc.pass_idx}", font=("Arial", 14))
             
             # --- STATUS MELDUNG (Step 1, 2, 3) ---
             msg_color = "#c0392b" if proc.is_waiting else "#102a43"
             # Textumbruch für lange C-Code Erklärungen
-            self.canvas.create_text(x_offset+130, 100, text=proc.status_msg, 
-                                    font=("Arial", 11, "bold"), fill=msg_color, width=230, justify="center")
+            self.canvas.create_text(x_offset+130, 115, text=proc.status_msg, 
+                                    font=("Arial", 20, "bold"), fill=msg_color, width=230, justify="center")
 
             # --- BALKEN ---
             for i in range(self.local_n):
@@ -262,7 +262,7 @@ class MPISimulator:
                 
                 # Balken mit Rand
                 self.canvas.create_rectangle(x0, y0, x0+50, y_base, fill=fill_col, outline="black", width=2)
-                self.canvas.create_text(x0+25, y_base+20, text=str(val), font=("Arial", 10, "bold"))
+                self.canvas.create_text(x0+25, y_base+20, text=str(val), font=("Arial", 14, "bold"))
 
             # --- Pfeile für Step 2 (Lokal) ---
             if "STEP_2" in proc.state and len(proc.highlights) == 2:
@@ -272,10 +272,10 @@ class MPISimulator:
                 bx2 = x_offset + 30 + idx2 * 65 + 25
                 # Pfeil drüber malen
                 self.canvas.create_line(bx1, y_base-300, bx2, y_base-300, fill="#e67e22", width=3)
-                self.canvas.create_text((bx1+bx2)/2, y_base-310, text="VS", fill="#e67e22", font=("Arial", 8, "bold"))
+                self.canvas.create_text((bx1+bx2)/2, y_base-310, text="VS", fill="#e67e22", font=("Arial", 12, "bold"))
 
         if all_finished:
-            self.canvas.create_text(400, 250, text="ALLES SORTIERT!", font=("Arial", 30, "bold"), fill="green")
+            self.canvas.create_text(400, 250, text="ALLES SORTIERT!", font=("Arial", 45, "bold"), fill="green")
             self.btn.config(state="disabled", bg="green", text="Fertig")
 
         # Skalierung anwenden

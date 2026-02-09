@@ -34,10 +34,10 @@ class MPISimulator:
         self.header_frame = tk.Frame(root)
         self.header_frame.pack(pady=10)
         
-        self.pass_label = tk.Label(self.header_frame, text=f"PASS: {self.pass_idx}", font=("Consolas", 14, "bold"))
+        self.pass_label = tk.Label(self.header_frame, text=f"PASS: {self.pass_idx}", font=("Consolas", 18, "bold"))
         self.pass_label.pack(side=tk.LEFT, padx=20)
         
-        self.swap_label = tk.Label(self.header_frame, text=f"SWAPS: 0", font=("Consolas", 14, "bold"), fg="#d35400")
+        self.swap_label = tk.Label(self.header_frame, text=f"SWAPS: 0", font=("Consolas", 18, "bold"), fg="#d35400")
         self.swap_label.pack(side=tk.LEFT, padx=20)
 
         # Skalierung
@@ -45,17 +45,17 @@ class MPISimulator:
         screen_h = self.root.winfo_screenheight()
         base_w = 750
         base_h = 450
-        self.scale = min(screen_w / base_w, (screen_h - 200) / base_h)
+        self.scale = min(screen_w / base_w, (screen_h - 250) / base_h)
 
         self.canvas = tk.Canvas(root, width=int(base_w * self.scale), height=int(base_h * self.scale), bg="#f5f5f5")
-        self.canvas.pack(pady=10)
+        self.canvas.pack(pady=5)
         
-        self.info_label = tk.Label(root, text="Startbereit.", font=("Arial", 11))
+        self.info_label = tk.Label(root, text="Startbereit.", font=("Arial", 14))
         self.info_label.pack()
 
         self.btn = tk.Button(root, text="Nächster Schritt", command=self.next_step, 
-                             height=2, width=25, bg="#2c3e50", fg="white", font=("Arial", 10, "bold"))
-        self.btn.pack(pady=15)
+                             height=2, width=25, bg="#2c3e50", fg="white", font=("Arial", 14, "bold"))
+        self.btn.pack(pady=5)
 
         self.draw_state()
 
@@ -69,7 +69,7 @@ class MPISimulator:
         self.canvas.create_line(x2, y_pos, x2, y_pos + 15, fill=color, width=3, arrow=tk.LAST)
         # Text "VS" in der Mitte
         mid_x = (x1 + x2) / 2
-        self.canvas.create_text(mid_x, y_pos - 10, text="VS", fill=color, font=("Arial", 8, "bold"))
+        self.canvas.create_text(mid_x, y_pos - 10, text="VS", fill=color, font=("Arial", 12, "bold"))
 
     def draw_state(self, highlights=None):
         self.canvas.delete("all")
@@ -85,7 +85,7 @@ class MPISimulator:
             
             box_bg = "#d4edda" if is_done else "white"
             self.canvas.create_rectangle(x_offset+10, 15, x_offset+230, 400, fill=box_bg, outline="#999")
-            self.canvas.create_text(x_offset+120, 35, text=f"Prozess P{r}", font=("Arial", 10, "bold"))
+            self.canvas.create_text(x_offset+120, 35, text=f"Prozess P{r}", font=("Arial", 14, "bold"))
 
             for i in range(self.local_n):
                 val = self.data[r][i]
@@ -106,10 +106,10 @@ class MPISimulator:
 
                 # BALKEN MIT RÄNDERN (width=2)
                 self.canvas.create_rectangle(x0, y0, x0+40, y_base, fill=fill_col, outline="black", width=2)
-                self.canvas.create_text(x0+20, y_base+15, text=str(val), font=("Arial", 9, "bold"))
+                self.canvas.create_text(x0+20, y_base+15, text=str(val), font=("Arial", 13, "bold"))
 
             l_limit = (limit - global_start) if (limit <= (global_start + self.local_n - 1)) else (self.local_n - 1)
-            self.canvas.create_text(x_offset+120, 385, text=f"Local Limit: {l_limit if not is_done else '-'}", font=("Arial", 8, "italic"))
+            self.canvas.create_text(x_offset+120, 385, text=f"Local Limit: {l_limit if not is_done else '-'}", font=("Arial", 11, "italic"))
 
         # Zeichne Pfeile, wenn zwei Elemente verglichen werden
         if len(highlight_coords) == 2 and highlights:
