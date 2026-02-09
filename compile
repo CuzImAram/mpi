@@ -1,0 +1,5 @@
+mpicc -O3 -Wall -o out/bubble bubble.c
+gcc -O3 -Wall -p out/bubble_seq bubble_seq.c 
+
+mpirun -n 16 out/bubble 100000 123
+out/bubble_seq 900000 123
