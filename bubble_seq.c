@@ -10,6 +10,7 @@ typedef struct
 
 int main(int argc, char **argv)
 {
+    // Check command line arguments
     if (argc < 3)
     {
         printf("Usage: %s <n> <seed>\n", argv[0]);
@@ -19,7 +20,7 @@ int main(int argc, char **argv)
     int n = atoi(argv[1]);
     int seed = atoi(argv[2]);
 
-    // Allocation
+    // Init array
     Element *a = (Element *)malloc(n * sizeof(Element));
     if (!a)
     {
@@ -27,7 +28,6 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // The srand call is inside the loop to ensure specific values per index
     for (int i = 0; i < n; ++i)
     {
         srand(seed * (i + 5));
@@ -49,7 +49,6 @@ int main(int argc, char **argv)
     clock_t start = clock();
 
     // Sorting
-    // Strict adherence to the provided loop structure to count swaps exactly.
     unsigned int n_swaps = 0;
     for (int i = n - 1; i > 0; --i)
     {

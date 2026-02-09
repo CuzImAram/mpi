@@ -12,12 +12,14 @@ typedef struct
 
 int main(int argc, char **argv)
 {
+    // Init MPI
     MPI_Init(&argc, &argv);
 
     int rank, p;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
+    // Check command line arguments
     if (argc < 3)
     {
         if (rank == 0)
@@ -52,13 +54,12 @@ int main(int argc, char **argv)
     }
 
     // --- 2. Output Input (Only for n<=20) ---
-    // Using simple byte-wise gather for simplicity and speed
     if (n <= 20)
     {
         Element *full = NULL;
         if (rank == 0)
             full = (Element *)malloc(n * sizeof(Element));
-        // Use MPI_BYTE to avoid Type construction overhead for simple gathering
+        // MPI_BYTE to avoid Type construction overhead for simple gathering
         MPI_Gather(local_a, local_n * sizeof(Element), MPI_BYTE,
                    full, local_n * sizeof(Element), MPI_BYTE, 0, MPI_COMM_WORLD);
 
