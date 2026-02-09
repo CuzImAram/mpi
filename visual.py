@@ -6,6 +6,12 @@ class MPISimulator:
         self.root = root
         self.root.title("MPI Bubble Sort - Arrows & Borders")
         
+        # Fullscreen / Maximiert starten
+        try:
+            self.root.state('zoomed')
+        except:
+            self.root.attributes('-fullscreen', True)
+        
         self.n = 9
         self.p = 3
         self.local_n = 3
@@ -34,7 +40,14 @@ class MPISimulator:
         self.swap_label = tk.Label(self.header_frame, text=f"SWAPS: 0", font=("Consolas", 14, "bold"), fg="#d35400")
         self.swap_label.pack(side=tk.LEFT, padx=20)
 
-        self.canvas = tk.Canvas(root, width=750, height=450, bg="#f5f5f5")
+        # Skalierung
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+        base_w = 750
+        base_h = 450
+        self.scale = min(screen_w / base_w, (screen_h - 200) / base_h)
+
+        self.canvas = tk.Canvas(root, width=int(base_w * self.scale), height=int(base_h * self.scale), bg="#f5f5f5")
         self.canvas.pack(pady=10)
         
         self.info_label = tk.Label(root, text="Startbereit.", font=("Arial", 11))
@@ -102,6 +115,9 @@ class MPISimulator:
         if len(highlight_coords) == 2 and highlights:
             # Wir nehmen die Farbe des ersten Highlights für den Pfeil
             self.draw_arrow(highlight_coords[0], highlight_coords[1], highlights[0][2])
+
+        # Skalierung anwenden
+        self.canvas.scale("all", 0, 0, self.scale, self.scale)
 
     def next_step(self):
         if self.finished: return

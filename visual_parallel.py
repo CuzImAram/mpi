@@ -170,6 +170,12 @@ class MPISimulator:
         self.root = root
         self.root.title("MPI C-Code Visualisierung (Step 1, 2, 3)")
         
+        # Fullscreen / Maximiert starten
+        try:
+            self.root.state('zoomed')
+        except:
+            self.root.attributes('-fullscreen', True)
+        
         self.n = 9
         self.p = 3
         self.local_n = 3
@@ -186,7 +192,17 @@ class MPISimulator:
             self.procs.append(MPIProcess(r, self.p, self.local_n, self.n, raw_data[r]))
 
         # UI Setup
-        self.canvas = tk.Canvas(root, width=800, height=600, bg="#f0f0f0")
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+        
+        # Basis-Bereich der originalen Zeichnung
+        base_w = 800
+        base_h = 550 
+        
+        # Skalierung berechnen (Platz für Button unten lassen)
+        self.scale = min(screen_w / base_w, (screen_h - 150) / base_h)
+        
+        self.canvas = tk.Canvas(root, width=int(base_w * self.scale), height=int(base_h * self.scale), bg="#f0f0f0")
         self.canvas.pack(pady=10)
         
         self.btn = tk.Button(root, text="Nächster Tick (Alle Prozesse)", command=self.global_tick, 
@@ -261,6 +277,9 @@ class MPISimulator:
         if all_finished:
             self.canvas.create_text(400, 250, text="ALLES SORTIERT!", font=("Arial", 30, "bold"), fill="green")
             self.btn.config(state="disabled", bg="green", text="Fertig")
+
+        # Skalierung anwenden
+        self.canvas.scale("all", 0, 0, self.scale, self.scale)
 
     def global_tick(self):
         for proc in self.procs:
