@@ -10,7 +10,7 @@ typedef struct
 
 int main(int argc, char **argv)
 {
-    // Check command line arguments
+    // Kommandozeilenargumente prüfen
     if (argc < 3)
     {
         printf("Usage: %s <n> <seed>\n", argv[0]);
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     int n = atoi(argv[1]);
     int seed = atoi(argv[2]);
 
-    // Init array
+    // Array initialisieren
     Element *a = (Element *)malloc(n * sizeof(Element));
     if (!a)
     {
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
         a[i].val = (rand() % 100) / 10.0;
     }
 
-    // Output Input for n <= 20
+    // Eingabe ausgeben für n <= 20
     if (n <= 20)
     {
         printf("Eingabe:");
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     clock_t start = clock();
 
-    // Sorting
+    // Sortieren
     unsigned int n_swaps = 0;
     for (int i = n - 1; i > 0; --i)
     {
@@ -68,10 +68,10 @@ int main(int argc, char **argv)
     clock_t end = clock();
     double time_taken = (double)(end - start) / CLOCKS_PER_SEC;
     printf("Time taken: %.6f seconds\n", time_taken);
-    // Output n_swaps
+    // n_swaps ausgeben
     printf("n_swaps = %u\n", n_swaps);
 
-    // Output Sorted Array for n <= 20
+    // Sortiertes Array ausgeben für n <= 20
     if (n <= 20)
     {
         printf("Ausgabe:");
